@@ -343,7 +343,7 @@ When updating this implementation:
 
 ## License
 
-MIT License, matching the original R package.
+GPL-3.0 License, matching the original R package.
 
 ## Contact
 

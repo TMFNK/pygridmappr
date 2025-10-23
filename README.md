@@ -10,7 +10,7 @@ This implementation maintains **full feature parity** with the original R packag
 
 ## Features
 
-- ✅ **Exact algorithm replication**: Uses Hungarian algorithm (linear sum assignment) for optimal point-to-grid allocation
+- ✅ **Algorithm replication**: Uses Hungarian algorithm (linear sum assignment) for optimal point-to-grid allocation
 - ✅ **Compactness parameter**: Control trade-off between geographic fidelity and grid compactness (0-1 scale)
 - ✅ **Spacer cells**: Constrain allocation by excluding specific grid cells
 - ✅ **Quality metrics**: Compute RMSE, mean distance, and other quality measures
