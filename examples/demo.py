@@ -16,19 +16,17 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Import pygridmappr functions
-# Assuming the package is installed or in Python path
-try:
-    from pygridmappr import (
-        points_to_grid,
-        visualize_allocation,
-        compute_allocation_quality,
-        compare_compactness,
-        generate_sample_points
-    )
-except ImportError:
-    print("Please ensure pygridmappr is in your Python path")
-    print("You can add it with: import sys; sys.path.insert(0, 'path/to/pygridmappr')")
-    raise
+# Import from local modules since package structure needs fixing
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+from core import points_to_grid, compute_allocation_quality
+from utils import (
+    visualize_allocation,
+    compare_compactness,
+    generate_sample_points
+)
 
 
 def demo_basic_allocation():
@@ -300,7 +298,7 @@ def demo_grid_size_exploration():
     pts = generate_sample_points(n_points=50, pattern='cluster', seed=456)
     
     # Try different grid sizes
-    grid_sizes = [(6, 6), (8, 8), (10, 10), (12, 12)]
+    grid_sizes = [(8, 8), (10, 10), (12, 12), (15, 15)]
     
     print("\nGrid size analysis:")
     print(f"{'Grid Size':<15} {'Available':<12} {'Points':<10} {'RMSE':<12}")

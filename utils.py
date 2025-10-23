@@ -10,8 +10,10 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-from typing import Optional, Tuple, List, Dict, Any
+from typing import Optional, Tuple, List, Dict, Any, Union
 from matplotlib.collections import PatchCollection
+from matplotlib.figure import Figure
+from matplotlib.axes import Axes
 
 
 def create_grid_layout(
@@ -65,7 +67,7 @@ def visualize_allocation(
     show_geographic: bool = True,
     figsize: Tuple[float, float] = (14, 6),
     **kwargs
-) -> Tuple[plt.Figure, plt.Axes]:
+) -> Tuple[Figure, Union[Tuple[Optional[Axes], Axes], Tuple[None, Axes]]]:
     """
     Visualize the grid allocation alongside the original geographic layout.
     
@@ -207,7 +209,7 @@ def compare_compactness(
     compactness_values: List[float] = [0.0, 0.5, 1.0],
     spacers: Optional[List[Tuple[int, int]]] = None,
     figsize: Tuple[float, float] = (15, 5)
-) -> Tuple[plt.Figure, List[plt.Axes]]:
+) -> Tuple[Figure, List[Axes]]:
     """
     Compare grid allocations with different compactness values.
     
@@ -231,7 +233,10 @@ def compare_compactness(
     fig : matplotlib.figure.Figure
     axes : list of matplotlib.axes.Axes
     """
-    from .core import points_to_grid, compute_allocation_quality
+    import sys
+    import os
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from core import points_to_grid, compute_allocation_quality
     
     n_plots = len(compactness_values)
     fig, axes = plt.subplots(1, n_plots, figsize=figsize)

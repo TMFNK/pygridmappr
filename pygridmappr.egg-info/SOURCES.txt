@@ -1,0 +1,9 @@
+LICENSE
+README.md
+setup.py
+pygridmappr.egg-info/PKG-INFO
+pygridmappr.egg-info/SOURCES.txt
+pygridmappr.egg-info/dependency_links.txt
+pygridmappr.egg-info/requires.txt
+pygridmappr.egg-info/top_level.txt
+tests/tests_core.py

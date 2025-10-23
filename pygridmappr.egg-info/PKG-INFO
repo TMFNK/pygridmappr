@@ -1,3 +1,51 @@
+Metadata-Version: 2.4
+Name: pygridmappr
+Version: 0.1.0
+Summary: Python implementation of R package gridmappr for automated gridmap layout generation
+Home-page: https://github.com/yourusername/pygridmappr
+Author: Python port of gridmappr by Roger Beecham
+Author-email: 
+Project-URL: Bug Reports, https://github.com/yourusername/pygridmappr/issues
+Project-URL: Source, https://github.com/yourusername/pygridmappr
+Project-URL: Original R Package, https://github.com/rogerbeecham/gridmappr
+Keywords: gridmap,tilemaps,cartography,geovisualization,small-multiples,assignment-problem,hungarian-algorithm
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: GIS
+Classifier: Topic :: Scientific/Engineering :: Visualization
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Requires-Python: >=3.7
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: numpy>=1.19.0
+Requires-Dist: pandas>=1.1.0
+Requires-Dist: scipy>=1.5.0
+Requires-Dist: matplotlib>=3.3.0
+Provides-Extra: dev
+Requires-Dist: pytest>=6.0; extra == "dev"
+Requires-Dist: pytest-cov>=2.10; extra == "dev"
+Requires-Dist: black>=21.0; extra == "dev"
+Requires-Dist: flake8>=3.9; extra == "dev"
+Requires-Dist: jupyter>=1.0; extra == "dev"
+Dynamic: author
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license-file
+Dynamic: project-url
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
 # pygridmappr
 
 A faithful Python implementation of the R package [`gridmappr`](https://github.com/rogerbeecham/gridmappr) by Roger Beecham.
@@ -189,37 +237,13 @@ cd examples
 python demo.py
 ```
 
-This generates five demonstration visualizations that showcase different aspects of the gridmappr algorithm:
+This generates:
 
-### Demo 1: Basic Point Allocation
-
-![Basic Allocation Example](examples/demo1_basic.png)
-
-_Basic 2×2 grid allocation showing how four corner points are optimally assigned to grid cells while preserving their geographic relationships._
-
-### Demo 2: Compactness Parameter Effect
-
-![Compactness Parameter Effect](examples/demo2_compactness.png)
-
-_Comparison of different compactness values (0.0, 0.5, 1.0) showing how the compactness parameter controls the trade-off between geographic fidelity and grid clustering. Lower values preserve spatial relationships while higher values create more compact clusters._
-
-### Demo 3: Using Spacers
-
-![Spacer Constraints](examples/demo3_spacers.png)
-
-_Demonstration of spacer constraints that force separation between geographic regions. The left visualization shows allocation without spacers (allowing mainland-island connection), while the right shows allocation with spacers creating a forced gap, mimicking the separation of Corsica from mainland France._
-
-### Demo 4: Geographic Patterns
-
-![Geographic Patterns](examples/demo4_patterns.png)
-
-_Comparison of how different geographic input patterns (random, cluster, ring, grid) are transformed into grid layouts. Each row shows the original geographic distribution (top) and the resulting grid allocation (bottom) with RMSE quality metrics._
-
-### Demo 5: Grid Size Exploration
-
-![Grid Size Exploration](examples/demo5_grid_sizes.png)
-
-_Analysis of how different grid sizes affect allocation quality. Larger grids provide more cells for precise geographic representation but may result in sparser layouts, while smaller grids create more compact but potentially less geographically faithful arrangements._
+- `demo1_basic.png`: Basic allocation example
+- `demo2_compactness.png`: Compactness parameter effects
+- `demo3_spacers.png`: Spacer constraints
+- `demo4_patterns.png`: Different geographic patterns
+- `demo5_grid_sizes.png`: Grid size exploration
 
 ## Design Philosophy
 
