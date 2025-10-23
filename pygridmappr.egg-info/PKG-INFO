@@ -2,18 +2,18 @@ Metadata-Version: 2.4
 Name: pygridmappr
 Version: 0.1.0
 Summary: Python implementation of R package gridmappr for automated gridmap layout generation
-Home-page: https://github.com/yourusername/pygridmappr
+Home-page: https://github.com/tmfnk/pygridmappr
 Author: Python port of gridmappr by Roger Beecham
 Author-email: 
-Project-URL: Bug Reports, https://github.com/yourusername/pygridmappr/issues
-Project-URL: Source, https://github.com/yourusername/pygridmappr
+Project-URL: Bug Reports, https://github.com/tmfnk/pygridmappr/issues
+Project-URL: Source, https://github.com/tmfnk/pygridmappr
 Project-URL: Original R Package, https://github.com/rogerbeecham/gridmappr
 Keywords: gridmap,tilemaps,cartography,geovisualization,small-multiples,assignment-problem,hungarian-algorithm
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Science/Research
 Classifier: Topic :: Scientific/Engineering :: GIS
 Classifier: Topic :: Scientific/Engineering :: Visualization
-Classifier: License :: OSI Approved :: MIT License
+Classifier: License :: OSI Approved :: GNU Affero General Public License v3 (AGPLv3)
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
@@ -48,7 +48,29 @@ Dynamic: summary
 
 # pygridmappr
 
+[![PyPI version](https://badge.fury.io/py/pygridmappr.svg)](https://badge.fury.io/py/pygridmappr)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
+[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+
 A faithful Python implementation of the R package [`gridmappr`](https://github.com/rogerbeecham/gridmappr) by Roger Beecham.
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Core Function](#core-function-pointstogrid)
+- [Mathematical Approach](#mathematical-approach)
+- [Examples](#examples)
+- [Demonstration Gallery](#demonstration-gallery)
+- [Design Philosophy](#design-philosophy)
+- [Differences from R Implementation](#differences-from-r-implementation)
+- [References](#references)
+- [License](#license)
+- [Citation](#citation)
+- [Contributing](#contributing)
+- [Acknowledgments](#acknowledgments)
 
 ## Overview
 
@@ -68,19 +90,33 @@ This implementation maintains **full feature parity** with the original R packag
 ## Installation
 
 ```bash
-# From source
+# From source (recommended for development)
 git clone https://github.com/tmfnk/pygridmappr
 cd pygridmappr
 pip install -e .
+
+# Or via pip (when available)
+pip install pygridmappr
 ```
 
 ### Requirements
 
-- Python ≥ 3.7
-- numpy
-- pandas
-- scipy
-- matplotlib
+- **Python ≥ 3.7**
+- **Core Dependencies:**
+  - numpy ≥ 1.19.0
+  - pandas ≥ 1.1.0
+  - scipy ≥ 1.5.0
+  - matplotlib ≥ 3.3.0
+
+### Development Installation
+
+For contributors and developers:
+
+```bash
+git clone https://github.com/tmfnk/pygridmappr
+cd pygridmappr
+pip install -e ".[dev]"
+```
 
 ## Quick Start
 
@@ -228,22 +264,60 @@ print(f"Mean distance: {quality['mean_distance']:.3f}")
 print(f"Max distance: {quality['max_distance']:.3f}")
 ```
 
-## Running Demos
+## Demonstration Gallery
 
-The package includes comprehensive demonstrations:
+The package includes comprehensive demonstrations that showcase the key features and capabilities of the gridmappr algorithm. These examples illustrate the mathematical principles and practical applications of the grid allocation method.
+
+### Quick Start
+
+Run the complete demonstration suite:
 
 ```bash
 cd examples
 python demo.py
 ```
 
-This generates:
+This generates five professional visualizations that demonstrate different aspects of the algorithm:
 
-- `demo1_basic.png`: Basic allocation example
-- `demo2_compactness.png`: Compactness parameter effects
-- `demo3_spacers.png`: Spacer constraints
-- `demo4_patterns.png`: Different geographic patterns
-- `demo5_grid_sizes.png`: Grid size exploration
+---
+
+### **Demo 1: Basic Point Allocation**
+
+![Basic Allocation Example](examples/demo1_basic.png)
+
+_Figure 1: Basic 2×2 grid allocation demonstrating optimal assignment of four corner points to grid cells while preserving geographic relationships. The algorithm minimizes total squared distance between original geographic positions and grid cell centers._
+
+---
+
+### **Demo 2: Compactness Parameter Effect**
+
+![Compactness Parameter Effect](examples/demo2_compactness.png)
+
+_Figure 2: Systematic comparison of compactness parameter effects (0.0, 0.5, 1.0). The compactness parameter controls the trade-off between geographic fidelity and grid clustering: lower values preserve spatial relationships while higher values create more compact, centralized clusters._
+
+---
+
+### **Demo 3: Spacer Constraints**
+
+![Spacer Constraints](examples/demo3_spacers.png)
+
+_Figure 3: Demonstration of spacer constraints for geographic separation. Left panel shows unconstrained allocation allowing mainland-island mixing; right panel shows allocation with spacer barriers creating forced separation, effectively mimicking the geographic isolation of Corsica from mainland France._
+
+---
+
+### **Demo 4: Geographic Pattern Analysis**
+
+![Geographic Patterns](examples/demo4_patterns.png)
+
+_Figure 4: Comparative analysis of different geographic input patterns (random, cluster, ring, grid) and their transformation into grid layouts. Each column shows the original geographic distribution (top row) and resulting grid allocation (bottom row) with quantitative RMSE quality metrics._
+
+---
+
+### **Demo 5: Grid Size Optimization**
+
+![Grid Size Exploration](examples/demo5_grid_sizes.png)
+
+_Figure 5: Systematic exploration of grid size effects on allocation quality. Analysis shows how different grid dimensions (8×8, 10×10, 12×12, 15×15) balance between available graphic space and geographic fidelity, with quantitative RMSE measurements for each configuration._
 
 ## Design Philosophy
 
@@ -280,7 +354,7 @@ This implementation prioritizes **accuracy over optimization**. The code structu
 
 ## License
 
-GPL-3.0 License (matching original R package)
+AGPL-3.0 License (matching original R package)
 
 ## Citation
 

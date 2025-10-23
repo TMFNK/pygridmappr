@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+include requirements.txt
+include quick_reference.md
+include technical_specification.md
+recursive-include examples *.py *.png
+recursive-include tests *.py
+graft pygridmappr.egg-info
