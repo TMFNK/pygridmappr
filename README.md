@@ -235,7 +235,7 @@ This generates five professional visualizations that demonstrate different aspec
 
 ### **Demo 1: Basic Point Allocation**
 
-![Basic Allocation Example](examples/demo1_basic.png)
+![Basic Allocation Example](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo1_basic.png)
 
 _Figure 1: Basic 2×2 grid allocation demonstrating optimal assignment of four corner points to grid cells while preserving geographic relationships. The algorithm minimizes total squared distance between original geographic positions and grid cell centers._
 
@@ -243,7 +243,7 @@ _Figure 1: Basic 2×2 grid allocation demonstrating optimal assignment of four c
 
 ### **Demo 2: Compactness Parameter Effect**
 
-![Compactness Parameter Effect](examples/demo2_compactness.png)
+![Compactness Parameter Effect](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo2_compactness.png)
 
 _Figure 2: Systematic comparison of compactness parameter effects (0.0, 0.5, 1.0). The compactness parameter controls the trade-off between geographic fidelity and grid clustering: lower values preserve spatial relationships while higher values create more compact, centralized clusters._
 
@@ -251,7 +251,7 @@ _Figure 2: Systematic comparison of compactness parameter effects (0.0, 0.5, 1.0
 
 ### **Demo 3: Spacer Constraints**
 
-![Spacer Constraints](examples/demo3_spacers.png)
+![Spacer Constraints](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo3_spacers.png)
 
 _Figure 3: Demonstration of spacer constraints for geographic separation. Left panel shows unconstrained allocation allowing mainland-island mixing; right panel shows allocation with spacer barriers creating forced separation, effectively mimicking the geographic isolation of Corsica from mainland France._
 
@@ -259,7 +259,7 @@ _Figure 3: Demonstration of spacer constraints for geographic separation. Left p
 
 ### **Demo 4: Geographic Pattern Analysis**
 
-![Geographic Patterns](examples/demo4_patterns.png)
+![Geographic Patterns](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo4_patterns.png)
 
 _Figure 4: Comparative analysis of different geographic input patterns (random, cluster, ring, grid) and their transformation into grid layouts. Each column shows the original geographic distribution (top row) and resulting grid allocation (bottom row) with quantitative RMSE quality metrics._
 
@@ -267,7 +267,7 @@ _Figure 4: Comparative analysis of different geographic input patterns (random, 
 
 ### **Demo 5: Grid Size Optimization**
 
-![Grid Size Exploration](examples/demo5_grid_sizes.png)
+![Grid Size Exploration](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo5_grid_sizes.png)
 
 _Figure 5: Systematic exploration of grid size effects on allocation quality. Analysis shows how different grid dimensions (8×8, 10×10, 12×12, 15×15) balance between available graphic space and geographic fidelity, with quantitative RMSE measurements for each configuration._
 

@@ -6,3 +6,10 @@ include technical_specification.md
 recursive-include examples *.py *.png
 recursive-include tests *.py
 graft pygridmappr.egg-info
+
+# Ensure demo images are explicitly included
+include examples/demo1_basic.png
+include examples/demo2_compactness.png
+include examples/demo3_spacers.png
+include examples/demo4_patterns.png
+include examples/demo5_grid_sizes.png
