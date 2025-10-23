@@ -9,7 +9,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="pygridmappr",
-    version="0.1.0",
+    version="0.1.1",
     author="Python port of gridmappr by Roger Beecham",
     author_email="",
     description="Python implementation of R package gridmappr for automated gridmap layout generation",
@@ -23,6 +23,7 @@ setup(
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: GIS",
         "Topic :: Scientific/Engineering :: Visualization",
+        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",

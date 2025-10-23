@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: pygridmappr
-Version: 0.1.0
+Version: 0.1.1
 Summary: Python implementation of R package gridmappr for automated gridmap layout generation
 Home-page: https://github.com/tmfnk/pygridmappr
 Author: Python port of gridmappr by Roger Beecham
@@ -14,6 +14,7 @@ Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Science/Research
 Classifier: Topic :: Scientific/Engineering :: GIS
 Classifier: Topic :: Scientific/Engineering :: Visualization
+Classifier: License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)
 Classifier: Programming Language :: Python :: 3
 Classifier: Programming Language :: Python :: 3.7
 Classifier: Programming Language :: Python :: 3.8
