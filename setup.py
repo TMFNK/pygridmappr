@@ -15,14 +15,14 @@ setup(
     description="Python implementation of R package gridmappr for automated gridmap layout generation",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/pygridmappr",
+    url="https://github.com/tmfnk/pygridmappr",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering :: GIS",
         "Topic :: Scientific/Engineering :: Visualization",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: GNU Affero General Public License v3 (AGPLv3)",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
@@ -48,8 +48,8 @@ setup(
     },
     keywords="gridmap, tilemaps, cartography, geovisualization, small-multiples, assignment-problem, hungarian-algorithm",
     project_urls={
-        "Bug Reports": "https://github.com/yourusername/pygridmappr/issues",
-        "Source": "https://github.com/yourusername/pygridmappr",
+        "Bug Reports": "https://github.com/tmfnk/pygridmappr/issues",
+        "Source": "https://github.com/tmfnk/pygridmappr",
         "Original R Package": "https://github.com/rogerbeecham/gridmappr",
     },
 )

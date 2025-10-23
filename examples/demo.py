@@ -65,7 +65,7 @@ def demo_basic_allocation():
         title="Basic Allocation Example",
         label_column='area_name'
     )
-    plt.savefig('demo1_basic.png', dpi=150, bbox_inches='tight')
+    plt.savefig('examples/demo1_basic.png', dpi=150, bbox_inches='tight')
     print("\nVisualization saved as 'demo1_basic.png'")
     plt.close()
 
@@ -103,7 +103,7 @@ def demo_compactness_effect():
         compactness_values=[0.0, 0.5, 1.0],
         figsize=(15, 5)
     )
-    plt.savefig('demo2_compactness.png', dpi=150, bbox_inches='tight')
+    plt.savefig('examples/demo2_compactness.png', dpi=150, bbox_inches='tight')
     print("\nComparison saved as 'demo2_compactness.png'")
     plt.close()
 
@@ -111,117 +111,155 @@ def demo_compactness_effect():
 def demo_with_spacers():
     """
     Demo 3: Using spacers to constrain allocation
-    
+
     This example mimics the France départements example from the R package,
     where spacers are used to separate Corsica from mainland France.
     """
     print("\n" + "=" * 70)
     print("DEMO 3: Using Spacers")
     print("=" * 70)
-    
+
     # Create synthetic "France-like" data
     # Mainland cluster + separated island cluster
     np.random.seed(123)
-    
+
     # Mainland points (larger cluster)
     n_mainland = 90
     mainland_x = np.random.normal(50, 15, n_mainland)
     mainland_y = np.random.normal(50, 20, n_mainland)
-    
+
     # Island points (smaller, separated cluster)
     n_island = 6
     island_x = np.random.normal(85, 3, n_island)
     island_y = np.random.normal(20, 3, n_island)
-    
+
     # Combine
     x = np.concatenate([mainland_x, island_x])
     y = np.concatenate([mainland_y, island_y])
-    
+
     pts = pd.DataFrame({
-        'area_name': [f'M{i+1}' if i < n_mainland else f'I{i-n_mainland+1}' 
+        'area_name': [f'M{i+1}' if i < n_mainland else f'I{i-n_mainland+1}'
                       for i in range(len(x))],
         'x': x,
         'y': y
     })
-    
+
     print(f"\nCreated synthetic data: {n_mainland} mainland + {n_island} island points")
-    
+
     # First allocation without spacers
     result_no_spacers = points_to_grid(pts, n_row=13, n_col=12, compactness=0.6)
     quality_no_spacers = compute_allocation_quality(result_no_spacers)
-    
+
     print("\nWithout spacers:")
     print(f"  RMSE: {quality_no_spacers['rmse']:.3f}")
-    
+
+    # Show island assignments without spacers
+    island_no_spacers = result_no_spacers[result_no_spacers['area_name'].str.startswith('I')]
+    print(f"  Island positions: {list(zip(island_no_spacers['row'], island_no_spacers['col']))}")
+
     # Define spacers to separate island from mainland
     # These create a "gap" in the grid
     spacers = [
         (1, 11), (2, 11), (3, 11),  # Right edge, bottom rows
         (1, 10), (2, 10)             # One column left
     ]
-    
+
     print(f"\nUsing {len(spacers)} spacer cells to create separation")
-    
+    print(f"Spacer positions: {spacers}")
+
     # Allocation with spacers
     result_with_spacers = points_to_grid(
-        pts, n_row=13, n_col=12, 
-        compactness=0.6, 
+        pts, n_row=13, n_col=12,
+        compactness=0.6,
         spacers=spacers
     )
     quality_with_spacers = compute_allocation_quality(result_with_spacers)
-    
+
     print("\nWith spacers:")
     print(f"  RMSE: {quality_with_spacers['rmse']:.3f}")
-    
-    # Visualize both
-    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
-    
+
+    # Show island assignments with spacers
+    island_with_spacers = result_with_spacers[result_with_spacers['area_name'].str.startswith('I')]
+    print(f"  Island positions: {list(zip(island_with_spacers['row'], island_with_spacers['col']))}")
+
+    # Compare the assignments
+    positions_no_spacers = set(zip(island_no_spacers['row'], island_no_spacers['col']))
+    positions_with_spacers = set(zip(island_with_spacers['row'], island_with_spacers['col']))
+    print(f"  Island positions changed: {positions_no_spacers != positions_with_spacers}")
+
+    # Check for conflicts with spacers
+    spacer_set = set(spacers)
+    conflicts = positions_with_spacers & spacer_set
+    print(f"  Island points in spacer cells: {conflicts}")
+
+    # Visualize both - improved version with better visual distinction
+    fig, axes = plt.subplots(1, 2, figsize=(16, 7))
+
     # Without spacers
     ax = axes[0]
     for row in range(1, 14):
         for col in range(1, 13):
             from matplotlib.patches import Rectangle
-            rect = Rectangle((col-1, row-1), 1, 1, 
+            rect = Rectangle((col-1, row-1), 1, 1,
                            linewidth=1, edgecolor='black',
                            facecolor='white', alpha=1.0)
             ax.add_patch(rect)
-    
-    ax.scatter(result_no_spacers['col'] - 0.5, 
-               result_no_spacers['row'] - 0.5,
-               s=30, alpha=0.7, c='blue')
+
+    # Plot mainland points (blue) and island points (red) separately
+    mainland_no_spacers = result_no_spacers[result_no_spacers['area_name'].str.startswith('M')]
+    island_no_spacers = result_no_spacers[result_no_spacers['area_name'].str.startswith('I')]
+
+    ax.scatter(mainland_no_spacers['col'] - 0.5,
+               mainland_no_spacers['row'] - 0.5,
+               s=30, alpha=0.7, c='blue', label='Mainland')
+    ax.scatter(island_no_spacers['col'] - 0.5,
+               island_no_spacers['row'] - 0.5,
+               s=50, alpha=0.9, c='red', label='Island', edgecolors='darkred', linewidth=2)
+
     ax.set_xlim(-0.5, 12.5)
     ax.set_ylim(-0.5, 13.5)
     ax.set_aspect('equal')
-    ax.set_title('Without Spacers\n(Island may connect to mainland)', 
-                 fontweight='bold')
+    ax.set_title('Without Spacers\n(Island may mix with mainland)', fontweight='bold')
     ax.grid(True, alpha=0.3)
-    
+    ax.legend()
+
     # With spacers
     ax = axes[1]
     for row in range(1, 14):
         for col in range(1, 13):
             is_spacer = (row, col) in spacers
             color = 'lightgray' if is_spacer else 'white'
-            alpha = 0.3 if is_spacer else 1.0
-            
+            alpha = 0.5 if is_spacer else 1.0
+            edge_color = 'red' if is_spacer else 'black'
+            linewidth = 2 if is_spacer else 1
+
             rect = Rectangle((col-1, row-1), 1, 1,
-                           linewidth=1, edgecolor='black',
+                           linewidth=linewidth, edgecolor=edge_color,
                            facecolor=color, alpha=alpha)
             ax.add_patch(rect)
-    
-    ax.scatter(result_with_spacers['col'] - 0.5,
-               result_with_spacers['row'] - 0.5,
-               s=30, alpha=0.7, c='blue')
+
+    # Plot mainland points (blue) and island points (red) separately
+    mainland_with_spacers = result_with_spacers[result_with_spacers['area_name'].str.startswith('M')]
+    island_with_spacers = result_with_spacers[result_with_spacers['area_name'].str.startswith('I')]
+
+    ax.scatter(mainland_with_spacers['col'] - 0.5,
+               mainland_with_spacers['row'] - 0.5,
+               s=30, alpha=0.7, c='blue', label='Mainland')
+    ax.scatter(island_with_spacers['col'] - 0.5,
+               island_with_spacers['row'] - 0.5,
+               s=50, alpha=0.9, c='red', label='Island', edgecolors='darkred', linewidth=2)
+
     ax.set_xlim(-0.5, 12.5)
     ax.set_ylim(-0.5, 13.5)
     ax.set_aspect('equal')
-    ax.set_title('With Spacers\n(Island separated)', fontweight='bold')
+    ax.set_title('With Spacers\n(Island separated by barrier)', fontweight='bold')
     ax.grid(True, alpha=0.3)
-    
-    fig.suptitle('Effect of Spacers on Grid Allocation', 
-                 fontsize=13, fontweight='bold')
+    ax.legend()
+
+    fig.suptitle('Effect of Spacers on Grid Allocation\nRed circles = Island points, Blue dots = Mainland points',
+                 fontsize=14, fontweight='bold')
     plt.tight_layout()
-    plt.savefig('demo3_spacers.png', dpi=150, bbox_inches='tight')
+    plt.savefig('examples/demo3_spacers.png', dpi=150, bbox_inches='tight')
     print("\nVisualization saved as 'demo3_spacers.png'")
     plt.close()
 
@@ -278,7 +316,7 @@ def demo_geographic_patterns():
     fig.suptitle('Geographic Patterns and Grid Allocations', 
                  fontsize=14, fontweight='bold')
     plt.tight_layout()
-    plt.savefig('demo4_patterns.png', dpi=150, bbox_inches='tight')
+    plt.savefig('examples/demo4_patterns.png', dpi=150, bbox_inches='tight')
     print("\nVisualization saved as 'demo4_patterns.png'")
     plt.close()
 
@@ -338,7 +376,7 @@ def demo_grid_size_exploration():
     fig.suptitle('Grid Size Exploration: Balancing Detail vs. Fidelity',
                  fontsize=13, fontweight='bold')
     plt.tight_layout()
-    plt.savefig('demo5_grid_sizes.png', dpi=150, bbox_inches='tight')
+    plt.savefig('examples/demo5_grid_sizes.png', dpi=150, bbox_inches='tight')
     print("\nVisualization saved as 'demo5_grid_sizes.png'")
     plt.close()
 
