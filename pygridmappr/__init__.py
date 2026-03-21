@@ -56,17 +56,17 @@ __all__ = [
 def __getattr__(name: str):
     if name in ("visualize_allocation", "create_grid_layout", "compare_compactness"):
         from .utils import (
-            compare_compactness,
-            create_grid_layout,
-            visualize_allocation,
+            compare_compactness,  # noqa: F401
+            create_grid_layout,  # noqa: F401
+            visualize_allocation,  # noqa: F401
         )
 
         return locals()[name]
     elif name in ("generate_sample_points", "export_to_csv", "load_from_csv"):
         from .utils import (
-            export_to_csv,
-            generate_sample_points,
-            load_from_csv,
+            export_to_csv,  # noqa: F401
+            generate_sample_points,  # noqa: F401
+            load_from_csv,  # noqa: F401
         )
 
         return locals()[name]
