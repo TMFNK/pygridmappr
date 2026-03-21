@@ -3,12 +3,13 @@
 Debug script to compare spacer vs no-spacer allocations in detail
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '.'))
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from core import points_to_grid
 
 # Reproduce the exact same data as in demo.py

@@ -3,12 +3,13 @@
 Test script to verify spacer functionality in pygridmappr
 """
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '.'))
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from core import points_to_grid
 
 # Create simple test data

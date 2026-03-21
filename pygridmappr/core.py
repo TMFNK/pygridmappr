@@ -11,7 +11,7 @@ Based on Jo Wood's Observable notebooks on Linear Programming and Gridmap Alloca
 
 References:
     Beecham, R., Dykes, J., Hama, L. and Lomax, N. (2021)
-    'On the Use of 'Glyphmaps' for Analysing the Scale and Temporal Spread 
+    'On the Use of 'Glyphmaps' for Analysing the Scale and Temporal Spread
     of COVID-19 Reported Cases', ISPRS International Journal of Geo-Information
 
 Mathematical Approach:
@@ -20,16 +20,17 @@ Mathematical Approach:
     matrix C[i,j] that represents the squared Euclidean distance between:
     1. The geographic position of point i (scaled to grid bounds)
     2. The position of grid cell j
-    
+
     The compactness parameter modulates this cost by adding a penalty that
-    attracts points toward (compactness > 0.5) or repels them from 
+    attracts points toward (compactness > 0.5) or repels them from
     (compactness < 0.5) the grid center.
 """
 
+from typing import Dict, List, Optional, Tuple
+
 import numpy as np
-from scipy.optimize import linear_sum_assignment
-from typing import List, Tuple, Optional, Dict
 import pandas as pd
+from scipy.optimize import linear_sum_assignment
 
 
 def points_to_grid(
@@ -37,16 +38,16 @@ def points_to_grid(
     n_row: int,
     n_col: int,
     compactness: float = 1.0,
-    spacers: Optional[List[Tuple[int, int]]] = None
+    spacers: Optional[List[Tuple[int, int]]] = None,
 ) -> pd.DataFrame:
     """
     Allocate geographic points to grid cells using optimal assignment.
-    
+
     This function replicates the R gridmappr::points_to_grid() function.
-    It allocates each geographic point to a unique grid cell such that the 
+    It allocates each geographic point to a unique grid cell such that the
     total squared distance between geographic positions (scaled to grid bounds)
     and grid positions is minimized.
-    
+
     Parameters
     ----------
     pts : pd.DataFrame
@@ -65,7 +66,7 @@ def points_to_grid(
         List of (row, col) tuples defining grid cells that cannot be assigned.
         Coordinates use 1-based indexing with origin (1,1) at bottom-left,
         matching the R implementation convention.
-        
+
     Returns
     -------
     pd.DataFrame
@@ -74,7 +75,7 @@ def points_to_grid(
         - 'col': Grid column assignment (1-based, bottom-left origin)
         - 'grid_x': X coordinate of assigned grid cell center
         - 'grid_y': Y coordinate of assigned grid cell center
-        
+
     Notes
     -----
     The algorithm works as follows:
@@ -83,13 +84,13 @@ def points_to_grid(
     3. Compute cost matrix C[i,j] = squared distance between point i and cell j
     4. Modify costs based on compactness parameter
     5. Use Hungarian algorithm to find optimal assignment
-    
+
     The compactness effect is implemented by computing distance from each
     grid cell to the grid center, then using this to adjust costs:
     - When compactness > 0.5: Cells closer to center have lower costs
     - When compactness < 0.5: Cells farther from center have lower costs
     - When compactness = 0.5: No modification (pure geographic distance)
-    
+
     Examples
     --------
     >>> import pandas as pd
@@ -101,51 +102,53 @@ def points_to_grid(
     >>> result = points_to_grid(pts, n_row=2, n_col=2, compactness=0.5)
     >>> print(result[['area_name', 'row', 'col']])
     """
-    # Validate inputs
-    if compactness < 0 or compactness > 1:
-        raise ValueError("compactness must be between 0 and 1")
-    
+    if not isinstance(pts, pd.DataFrame):
+        raise TypeError(f"pts must be a pandas DataFrame, got {type(pts).__name__}")
+    if "x" not in pts.columns or "y" not in pts.columns:
+        raise ValueError("pts must contain columns 'x' and 'y'")
+    if len(pts) == 0:
+        raise ValueError("pts must not be empty")
     if n_row < 1 or n_col < 1:
-        raise ValueError("n_row and n_col must be positive integers")
-    
-    # Check that pts has required columns
-    if 'x' not in pts.columns or 'y' not in pts.columns:
-        raise ValueError("pts DataFrame must contain 'x' and 'y' columns")
-    
-    # Check that grid is large enough
-    n_points = len(pts)
+        raise ValueError(
+            f"n_row and n_col must be >= 1, got n_row={n_row}, n_col={n_col}"
+        )
+    if not (0.0 <= compactness <= 1.0):
+        raise ValueError(f"compactness must be in [0, 1], got {compactness}")
+    if len(pts) > n_row * n_col:
+        raise ValueError(
+            f"Number of points ({len(pts)}) exceeds grid capacity "
+            f"({n_row}×{n_col} = {n_row * n_col} cells)"
+        )
     if spacers is None:
         spacers = []
     n_available_cells = n_row * n_col - len(spacers)
-    
+
+    n_points = len(pts)
     if n_available_cells < n_points:
         raise ValueError(
             f"Grid has only {n_available_cells} available cells "
             f"but {n_points} points need to be allocated. "
             f"Increase grid dimensions or reduce spacers."
         )
-    
+
     # Create a copy to avoid modifying the input
     result = pts.copy()
-    
+
     # Extract coordinates
-    x = pts['x'].values
-    y = pts['y'].values
-    
-    # Step 1: Scale geographic coordinates to grid bounds
-    # This matches the R implementation's scaling approach
-    x_min, x_max = x.min(), x.max()
-    y_min, y_max = y.min(), y.max()
-    
-    # Avoid division by zero for single point or collinear points
-    x_range = x_max - x_min if x_max > x_min else 1.0
-    y_range = y_max - y_min if y_max > y_min else 1.0
-    
-    # Scale to [0, n_col] x [0, n_row]
-    # This preserves the aspect ratio of the geographic data
-    x_scaled = (x - x_min) / x_range * n_col
-    y_scaled = (y - y_min) / y_range * n_row
-    
+    x = pts["x"].values
+    y = pts["y"].values
+
+    x_range = x.max() - x.min()
+    y_range = y.max() - y.min()
+    x_scaled = pd.Series(
+        (x - x.min()) / x_range if x_range > 0 else pd.Series(0.5, index=pts.index),
+        index=pts.index,
+    )
+    y_scaled = pd.Series(
+        (y - y.min()) / y_range if y_range > 0 else pd.Series(0.5, index=pts.index),
+        index=pts.index,
+    )
+
     # Step 2: Generate all grid cell positions
     # Grid uses 1-based indexing with origin at bottom-left
     # We'll work in 0-based internally and convert at the end
@@ -155,7 +158,7 @@ def points_to_grid(
             # Convert to 1-based for spacer checking
             row_1based = row + 1
             col_1based = col + 1
-            
+
             # Check if this cell is a spacer (should be excluded)
             if (row_1based, col_1based) not in spacers:
                 # Cell center coordinates (in 0-based system)
@@ -163,98 +166,69 @@ def points_to_grid(
                 cell_x = col + 0.5
                 cell_y = row + 0.5
                 grid_cells.append((row, col, cell_x, cell_y))
-    
+
     grid_cells = np.array(grid_cells)
-    n_cells = len(grid_cells)
-    
-    # Step 3: Compute cost matrix
-    # C[i, j] = squared Euclidean distance between point i and cell j
-    cost_matrix = np.zeros((n_points, n_cells))
-    
-    for i in range(n_points):
-        for j in range(n_cells):
-            cell_x = grid_cells[j, 2]
-            cell_y = grid_cells[j, 3]
-            
-            # Squared Euclidean distance
-            dx = x_scaled[i] - cell_x
-            dy = y_scaled[i] - cell_y
-            cost_matrix[i, j] = dx * dx + dy * dy
-    
-    # Step 4: Apply compactness adjustment
-    # This is the key innovation of gridmappr
+
+    grid_x = grid_cells[:, 2]
+    grid_y = grid_cells[:, 3]
+
+    dx = x_scaled.values[:, np.newaxis] - grid_x[np.newaxis, :]
+    dy = y_scaled.values[:, np.newaxis] - grid_y[np.newaxis, :]
+    cost_matrix = dx**2 + dy**2
+
     if compactness != 0.5:
-        # Compute distance of each grid cell from the grid center
         grid_center_x = n_col / 2.0
         grid_center_y = n_row / 2.0
-        
-        # For each grid cell, compute squared distance from center
-        dist_from_center = np.zeros(n_cells)
-        for j in range(n_cells):
-            cell_x = grid_cells[j, 2]
-            cell_y = grid_cells[j, 3]
-            dx = cell_x - grid_center_x
-            dy = cell_y - grid_center_y
-            dist_from_center[j] = dx * dx + dy * dy
-        
-        # Normalize distances to [0, 1] range for numerical stability
+
+        dist_from_center = (grid_x - grid_center_x) ** 2 + (grid_y - grid_center_y) ** 2
+
         max_dist = dist_from_center.max()
         if max_dist > 0:
             dist_from_center_normalized = dist_from_center / max_dist
         else:
             dist_from_center_normalized = dist_from_center
-        
-        # Compute compactness weight
-        # compactness = 0.5 → weight = 0 (no effect)
-        # compactness = 1.0 → weight = 1 (strong attraction to center)
-        # compactness = 0.0 → weight = -1 (strong repulsion from center)
+
         compactness_weight = 2.0 * (compactness - 0.5)
-        
-        # Apply compactness penalty to cost matrix
-        # If compactness > 0.5: reduce cost for cells near center
-        # If compactness < 0.5: increase cost for cells near center
-        for i in range(n_points):
-            for j in range(n_cells):
-                # The penalty is proportional to distance from center
-                # We add this to the geographic distance cost
-                # The scale factor ensures the compactness effect is meaningful
-                # relative to the geographic distances
-                penalty = -compactness_weight * dist_from_center_normalized[j]
-                cost_matrix[i, j] += penalty * np.mean(cost_matrix[i, :])
-    
+
+        row_means = cost_matrix.mean(axis=1, keepdims=True)
+        penalty_matrix = (
+            -compactness_weight * dist_from_center_normalized[np.newaxis, :]
+        )
+        cost_matrix += penalty_matrix * row_means
+
     # Step 5: Solve assignment problem using Hungarian algorithm
     # This finds the optimal one-to-one assignment that minimizes total cost
     row_ind, col_ind = linear_sum_assignment(cost_matrix)
-    
+
     # Step 6: Extract grid assignments and convert to 1-based indexing
     for i, j in zip(row_ind, col_ind):
         row_0based = int(grid_cells[j, 0])
         col_0based = int(grid_cells[j, 1])
-        
+
         # Convert to 1-based indexing for output (matching R convention)
-        result.loc[i, 'row'] = row_0based + 1
-        result.loc[i, 'col'] = col_0based + 1
-        
+        result.loc[i, "row"] = row_0based + 1
+        result.loc[i, "col"] = col_0based + 1
+
         # Also store the grid cell center coordinates
-        result.loc[i, 'grid_x'] = grid_cells[j, 2]
-        result.loc[i, 'grid_y'] = grid_cells[j, 3]
-    
+        result.loc[i, "grid_x"] = grid_cells[j, 2]
+        result.loc[i, "grid_y"] = grid_cells[j, 3]
+
     # Convert to integer type for row and col
-    result['row'] = result['row'].astype(int)
-    result['col'] = result['col'].astype(int)
-    
+    result["row"] = result["row"].astype(int)
+    result["col"] = result["col"].astype(int)
+
     return result
 
 
 def compute_allocation_quality(result: pd.DataFrame) -> Dict[str, float]:
     """
     Compute quality metrics for a grid allocation.
-    
+
     Parameters
     ----------
     result : pd.DataFrame
         Output from points_to_grid() with 'x', 'y', 'grid_x', 'grid_y' columns
-        
+
     Returns
     -------
     dict
@@ -264,36 +238,36 @@ def compute_allocation_quality(result: pd.DataFrame) -> Dict[str, float]:
         - 'max_distance': Maximum distance for any point
         - 'rmse': Root mean squared error
     """
-    if not all(col in result.columns for col in ['x', 'y', 'grid_x', 'grid_y']):
+    if not all(col in result.columns for col in ["x", "y", "grid_x", "grid_y"]):
         raise ValueError("result must contain x, y, grid_x, and grid_y columns")
-    
+
     # Note: grid coordinates are in grid units, geographic coords are in original units
     # We need to scale properly for meaningful comparison
-    x = result['x'].values
-    y = result['y'].values
-    
+    x = result["x"].values
+    y = result["y"].values
+
     # Scale geographic to same range as grid
     x_min, x_max = x.min(), x.max()
     y_min, y_max = y.min(), y.max()
     x_range = x_max - x_min if x_max > x_min else 1.0
     y_range = y_max - y_min if y_max > y_min else 1.0
-    
+
     # Infer grid dimensions from result
-    n_col = result['col'].max()
-    n_row = result['row'].max()
-    
+    n_col = result["col"].max()
+    n_row = result["row"].max()
+
     x_scaled = (x - x_min) / x_range * n_col
     y_scaled = (y - y_min) / y_range * n_row
-    
+
     # Compute distances
-    grid_x = result['grid_x'].values
-    grid_y = result['grid_y'].values
-    
-    distances = np.sqrt((x_scaled - grid_x)**2 + (y_scaled - grid_y)**2)
-    
+    grid_x = result["grid_x"].values
+    grid_y = result["grid_y"].values
+
+    distances = np.sqrt((x_scaled - grid_x) ** 2 + (y_scaled - grid_y) ** 2)
+
     return {
-        'mean_distance': float(np.mean(distances)),
-        'total_distance': float(np.sum(distances)),
-        'max_distance': float(np.max(distances)),
-        'rmse': float(np.sqrt(np.mean(distances**2)))
+        "mean_distance": float(np.mean(distances)),
+        "total_distance": float(np.sum(distances)),
+        "max_distance": float(np.max(distances)),
+        "rmse": float(np.sqrt(np.mean(distances**2))),
     }

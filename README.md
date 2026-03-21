@@ -2,7 +2,7 @@
 
 [![PyPI version](https://img.shields.io/pypi/v/pygridmappr.svg)](https://pypi.org/project/pygridmappr/)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 
 A faithful Python implementation of the R package [`gridmappr`](https://github.com/rogerbeecham/gridmappr) by Roger Beecham.
 
@@ -43,7 +43,7 @@ This implementation maintains **full feature parity** with the original R packag
 
 ```bash
 # From source (recommended for development)
-git clone https://github.com/tmfnk/pygridmappr
+git clone https://github.com/TMFNK/pygridmappr
 cd pygridmappr
 pip install -e .
 
@@ -65,7 +65,7 @@ pip install pygridmappr
 For contributors and developers:
 
 ```bash
-git clone https://github.com/tmfnk/pygridmappr
+git clone https://github.com/TMFNK/pygridmappr
 cd pygridmappr
 pip install -e ".[dev]"
 ```
