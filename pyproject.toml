@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pygridmappr"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python implementation of the R gridmappr package for grid map allocation"
 readme = "README.md"
 license = { text = "AGPL-3.0" }
