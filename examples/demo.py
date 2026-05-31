@@ -15,17 +15,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# Import pygridmappr functions
-# Import from local modules since package structure needs fixing
-import sys
-import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
-
-from core import points_to_grid, compute_allocation_quality
-from utils import (
-    visualize_allocation,
+from pygridmappr import (
     compare_compactness,
-    generate_sample_points
+    compute_allocation_quality,
+    generate_sample_points,
+    points_to_grid,
+    visualize_allocation,
 )
 
 
