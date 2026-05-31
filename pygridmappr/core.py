@@ -140,12 +140,17 @@ def points_to_grid(
 
     x_range = x.max() - x.min()
     y_range = y.max() - y.min()
+    # Scale geographic coords to [0, n_col] x [0, n_row] to match grid cell centers
     x_scaled = pd.Series(
-        (x - x.min()) / x_range if x_range > 0 else pd.Series(0.5, index=pts.index),
+        (x - x.min()) / x_range * n_col
+        if x_range > 0
+        else pd.Series(n_col / 2.0, index=pts.index),
         index=pts.index,
     )
     y_scaled = pd.Series(
-        (y - y.min()) / y_range if y_range > 0 else pd.Series(0.5, index=pts.index),
+        (y - y.min()) / y_range * n_row
+        if y_range > 0
+        else pd.Series(n_row / 2.0, index=pts.index),
         index=pts.index,
     )
 
@@ -198,29 +203,24 @@ def points_to_grid(
 
     # Step 5: Solve assignment problem using Hungarian algorithm
     # This finds the optimal one-to-one assignment that minimizes total cost
-    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    _, col_ind = linear_sum_assignment(cost_matrix)
 
     # Step 6: Extract grid assignments and convert to 1-based indexing
-    for i, j in zip(row_ind, col_ind):
-        row_0based = int(grid_cells[j, 0])
-        col_0based = int(grid_cells[j, 1])
-
-        # Convert to 1-based indexing for output (matching R convention)
-        result.loc[i, "row"] = row_0based + 1
-        result.loc[i, "col"] = col_0based + 1
-
-        # Also store the grid cell center coordinates
-        result.loc[i, "grid_x"] = grid_cells[j, 2]
-        result.loc[i, "grid_y"] = grid_cells[j, 3]
-
-    # Convert to integer type for row and col
-    result["row"] = result["row"].astype(int)
-    result["col"] = result["col"].astype(int)
+    assigned_cells = grid_cells[col_ind]
+    result = result.reset_index(drop=True)
+    result["row"] = (assigned_cells[:, 0] + 1).astype(int)
+    result["col"] = (assigned_cells[:, 1] + 1).astype(int)
+    result["grid_x"] = assigned_cells[:, 2]
+    result["grid_y"] = assigned_cells[:, 3]
 
     return result
 
 
-def compute_allocation_quality(result: pd.DataFrame) -> Dict[str, float]:
+def compute_allocation_quality(
+    result: pd.DataFrame,
+    n_row: Optional[int] = None,
+    n_col: Optional[int] = None,
+) -> Dict[str, float]:
     """
     Compute quality metrics for a grid allocation.
 
@@ -228,6 +228,10 @@ def compute_allocation_quality(result: pd.DataFrame) -> Dict[str, float]:
     ----------
     result : pd.DataFrame
         Output from points_to_grid() with 'x', 'y', 'grid_x', 'grid_y' columns
+    n_row : int, optional
+        Number of grid rows. If None, inferred from result (may underestimate).
+    n_col : int, optional
+        Number of grid columns. If None, inferred from result (may underestimate).
 
     Returns
     -------
@@ -241,6 +245,11 @@ def compute_allocation_quality(result: pd.DataFrame) -> Dict[str, float]:
     if not all(col in result.columns for col in ["x", "y", "grid_x", "grid_y"]):
         raise ValueError("result must contain x, y, grid_x, and grid_y columns")
 
+    if n_col is None:
+        n_col = int(result["col"].max())
+    if n_row is None:
+        n_row = int(result["row"].max())
+
     # Note: grid coordinates are in grid units, geographic coords are in original units
     # We need to scale properly for meaningful comparison
     x = result["x"].values
@@ -251,10 +260,6 @@ def compute_allocation_quality(result: pd.DataFrame) -> Dict[str, float]:
     y_min, y_max = y.min(), y.max()
     x_range = x_max - x_min if x_max > x_min else 1.0
     y_range = y_max - y_min if y_max > y_min else 1.0
-
-    # Infer grid dimensions from result
-    n_col = result["col"].max()
-    n_row = result["row"].max()
 
     x_scaled = (x - x_min) / x_range * n_col
     y_scaled = (y - y_min) / y_range * n_row

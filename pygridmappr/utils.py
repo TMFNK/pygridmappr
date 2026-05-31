@@ -240,11 +240,7 @@ def compare_compactness(
     fig : matplotlib.figure.Figure
     axes : list of matplotlib.axes.Axes
     """
-    import os
-    import sys
-
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from core import compute_allocation_quality, points_to_grid
+    from .core import compute_allocation_quality, points_to_grid
 
     if compactness_values is None:
         compactness_values = [0.0, 0.5, 1.0]

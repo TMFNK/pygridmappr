@@ -36,7 +36,7 @@ Example
 >>> fig, axes = visualize_allocation(result, n_row=2, n_col=2)
 """
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __author__ = "Python port of gridmappr by Roger Beecham"
 
 from .core import compute_allocation_quality, points_to_grid
