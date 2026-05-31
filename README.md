@@ -1,74 +1,35 @@
-# pygridmappr
+<p align="center">
+  <img src="https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo2_compactness.png" alt="pygridmappr compactness comparison" width="700">
+</p>
 
-[![PyPI version](https://img.shields.io/pypi/v/pygridmappr.svg)](https://pypi.org/project/pygridmappr/)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+<h1 align="center">pygridmappr</h1>
 
-A faithful Python implementation of the R package [`gridmappr`](https://github.com/rogerbeecham/gridmappr) by Roger Beecham.
+<p align="center">
+  <strong>Optimal grid layouts from geographic points, in three lines of Python.</strong>
+</p>
 
-## Table of Contents
+<p align="center">
+  <a href="https://pypi.org/project/pygridmappr/"><img src="https://img.shields.io/pypi/v/pygridmappr.svg" alt="PyPI version"></a>
+  <a href="https://pypi.org/project/pygridmappr/"><img src="https://img.shields.io/pypi/pyversions/pygridmappr.svg" alt="Python versions"></a>
+  <a href="https://www.gnu.org/licenses/agpl-3.0"><img src="https://img.shields.io/badge/License-AGPLv3-blue.svg" alt="License: AGPL v3"></a>
+  <a href="https://github.com/TMFNK/pygridmappr/actions"><img src="https://img.shields.io/github/actions/workflow/status/TMFNK/pygridmappr/ci.yml?branch=main&label=tests" alt="Tests"></a>
+</p>
 
-- [Overview](#overview)
-- [Features](#features)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Core Function](#core-function-pointstogrid)
-- [Mathematical Approach](#mathematical-approach)
-- [Examples](#examples)
-- [Demonstration Gallery](#demonstration-gallery)
-- [Design Philosophy](#design-philosophy)
-- [Differences from R Implementation](#differences-from-r-implementation)
-- [References](#references)
-- [License](#license)
-- [Citation](#citation)
-- [Contributing](#contributing)
-- [Acknowledgments](#acknowledgments)
+<p align="center">
+  <a href="#quick-start">Quick Start</a> &bull;
+  <a href="#installation">Installation</a> &bull;
+  <a href="#examples">Examples</a> &bull;
+  <a href="#api-reference">API Reference</a> &bull;
+  <a href="#contributing">Contributing</a>
+</p>
 
-## Overview
+---
 
-`pygridmappr` automates the generation of small multiple gridmap layouts. Given a set of geographic point locations, it creates a grid with specified row and column dimensions, placing each point in a grid cell such that the distance between points in geographic space and grid space is minimized.
+**pygridmappr** allocates geographic points to grid cells while preserving spatial relationships. It uses the [Hungarian algorithm](https://en.wikipedia.org/wiki/Hungarian_algorithm) to find the assignment that minimizes total squared distance between geographic positions and grid cell centers.
 
-This implementation maintains **full feature parity** with the original R package and replicates the mathematical logic as faithfully as possible.
+A faithful Python port of Roger Beecham's R package [`gridmappr`](https://github.com/rogerbeecham/gridmappr).
 
-## Features
-
-- ✅ **Algorithm replication**: Uses Hungarian algorithm (linear sum assignment) for optimal point-to-grid allocation
-- ✅ **Compactness parameter**: Control trade-off between geographic fidelity and grid compactness (0-1 scale)
-- ✅ **Spacer cells**: Constrain allocation by excluding specific grid cells
-- ✅ **Quality metrics**: Compute RMSE, mean distance, and other quality measures
-- ✅ **Visualization tools**: Compare geographic and grid layouts side-by-side
-- ✅ **Deterministic results**: Reproducible allocations for identical inputs
-
-## Installation
-
-```bash
-# From source (recommended for development)
-git clone https://github.com/TMFNK/pygridmappr
-cd pygridmappr
-pip install -e .
-
-# Or via pip (when available)
-pip install pygridmappr
-```
-
-### Requirements
-
-- **Python ≥ 3.7**
-- **Core Dependencies:**
-  - numpy ≥ 1.19.0
-  - pandas ≥ 1.1.0
-  - scipy ≥ 1.5.0
-  - matplotlib ≥ 3.3.0
-
-### Development Installation
-
-For contributors and developers:
-
-```bash
-git clone https://github.com/TMFNK/pygridmappr
-cd pygridmappr
-pip install -e ".[dev]"
-```
+**Use cases:** small-multiple cartograms, glyph maps, tile grid maps, any visualization where you need to show data for geographic areas in a regular grid layout.
 
 ## Quick Start
 
@@ -76,241 +37,161 @@ pip install -e ".[dev]"
 import pandas as pd
 from pygridmappr import points_to_grid, visualize_allocation
 
-# Create point data
 pts = pd.DataFrame({
     'area_name': ['A', 'B', 'C', 'D'],
     'x': [0, 100, 100, 0],
     'y': [0, 0, 100, 100]
 })
 
-# Allocate to 2×2 grid
 result = points_to_grid(pts, n_row=2, n_col=2, compactness=0.5)
-
-# Visualize
 fig, axes = visualize_allocation(result, n_row=2, n_col=2)
 ```
 
-## Core Function: `points_to_grid()`
+That's it. Each point gets a unique grid cell, and the layout respects the original geography.
 
-```python
-points_to_grid(
-    pts: pd.DataFrame,
-    n_row: int,
-    n_col: int,
-    compactness: float = 1.0,
-    spacers: Optional[List[Tuple[int, int]]] = None
-) -> pd.DataFrame
+## Installation
+
+```bash
+pip install pygridmappr
 ```
 
-### Parameters
+Or install from source for the latest version:
 
-- **`pts`**: DataFrame with columns `'x'` and `'y'` (required), optionally `'area_name'` or other identifiers
-- **`n_row`**: Number of grid rows (must be ≥ 1)
-- **`n_col`**: Number of grid columns (must be ≥ 1)
-- **`compactness`**: Value between 0 and 1:
-  - `0.5`: Preserves scaled geographic layout
-  - `1.0`: Allocates toward grid center (compact cluster)
-  - `0.0`: Allocates toward grid edges
-- **`spacers`**: List of `(row, col)` tuples using **1-based indexing** with origin `(1,1)` at bottom-left (matches R convention)
-
-### Returns
-
-DataFrame with added columns:
-
-- `row`: Grid row assignment (1-based)
-- `col`: Grid column assignment (1-based)
-- `grid_x`: X coordinate of grid cell center
-- `grid_y`: Y coordinate of grid cell center
-
-## Mathematical Approach
-
-The algorithm minimizes the total squared distance between:
-
-1. Geographic positions (scaled to grid bounds)
-2. Grid cell positions
-
-### Cost Matrix
-
-For each point _i_ and grid cell _j_:
-
-```
-C[i,j] = (x_scaled[i] - x_grid[j])² + (y_scaled[i] - y_grid[j])²
+```bash
+git clone https://github.com/TMFNK/pygridmappr
+cd pygridmappr
+pip install -e .
 ```
 
-### Compactness Adjustment
-
-When `compactness ≠ 0.5`, costs are modified based on distance from grid center:
-
-```
-penalty = -2(compactness - 0.5) × normalized_distance_from_center[j]
-C[i,j] += penalty × mean(C[i,:])
-```
-
-- **compactness > 0.5**: Reduces cost for cells near center (attraction)
-- **compactness < 0.5**: Increases cost for cells near center (repulsion)
-
-### Assignment
-
-The optimal assignment is found using `scipy.optimize.linear_sum_assignment` (Hungarian algorithm), which solves:
-
-```
-minimize Σᵢ C[i, assignment[i]]
-```
-
-subject to:
-
-- Each point assigned to exactly one cell
-- Each cell contains at most one point
+**Requirements:** Python 3.8+ &bull; NumPy &bull; Pandas &bull; SciPy &bull; Matplotlib
 
 ## Examples
 
-### Example 1: Basic Allocation
+### Compactness Parameter
+
+The `compactness` parameter (0 to 1) controls the trade-off between geographic fidelity and grid density:
+
+| Value | Effect |
+|-------|--------|
+| `0.0` | Points spread toward grid edges |
+| `0.5` | Preserves scaled geographic layout |
+| `1.0` | Points cluster toward grid center |
 
 ```python
-from pygridmappr import points_to_grid, generate_sample_points
+from pygridmappr import compare_compactness, generate_sample_points
 
-# Generate random points
 pts = generate_sample_points(n_points=20, pattern='random', seed=42)
-
-# Allocate with geographic preservation
-result = points_to_grid(pts, n_row=5, n_col=5, compactness=0.5)
+fig, axes = compare_compactness(pts, n_row=5, n_col=5, compactness_values=[0.0, 0.5, 1.0])
 ```
 
-### Example 2: Compactness Comparison
+![Compactness comparison](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo2_compactness.png)
+
+### Spacer Cells
+
+Block specific grid cells to create visual separation (e.g., separating an island from a mainland):
 
 ```python
-from pygridmappr import compare_compactness
+spacers = [(1, 11), (2, 11), (3, 11), (1, 10), (2, 10)]
 
-fig, axes = compare_compactness(
-    pts,
-    n_row=6, n_col=6,
-    compactness_values=[0.0, 0.5, 1.0]
-)
+result = points_to_grid(pts, n_row=13, n_col=12, compactness=0.6, spacers=spacers)
 ```
 
-### Example 3: Using Spacers
+![Spacer constraints](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo3_spacers.png)
 
-```python
-# Define spacers to create separation (e.g., island from mainland)
-spacers = [
-    (1, 11), (2, 11), (3, 11),  # Bottom-right corner
-    (1, 10), (2, 10)
-]
+### Geographic Patterns
 
-result = points_to_grid(
-    pts,
-    n_row=13, n_col=12,
-    compactness=0.6,
-    spacers=spacers
-)
-```
+The algorithm handles any spatial distribution:
 
-### Example 4: Quality Metrics
+![Geographic patterns](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo4_patterns.png)
+
+### Grid Size Exploration
+
+Find the right balance between available space and geographic fidelity:
+
+![Grid sizes](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo5_grid_sizes.png)
+
+### Quality Metrics
+
+Measure how well the grid preserves geography:
 
 ```python
 from pygridmappr import compute_allocation_quality
 
-quality = compute_allocation_quality(result)
+quality = compute_allocation_quality(result, n_row=13, n_col=12)
 print(f"RMSE: {quality['rmse']:.3f}")
 print(f"Mean distance: {quality['mean_distance']:.3f}")
 print(f"Max distance: {quality['max_distance']:.3f}")
 ```
 
-## Demonstration Gallery
+## API Reference
 
-The package includes comprehensive demonstrations that showcase the key features and capabilities of the gridmappr algorithm. These examples illustrate the mathematical principles and practical applications of the grid allocation method.
+### `points_to_grid(pts, n_row, n_col, compactness=1.0, spacers=None)`
 
-### Quick Start
+Allocate geographic points to grid cells using optimal assignment.
 
-Run the complete demonstration suite:
+**Parameters:**
 
-```bash
-cd examples
-python demo.py
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `pts` | `pd.DataFrame` | DataFrame with `'x'` and `'y'` columns |
+| `n_row` | `int` | Number of grid rows |
+| `n_col` | `int` | Number of grid columns |
+| `compactness` | `float` | Layout control, 0 to 1 (default: `1.0`) |
+| `spacers` | `list[tuple]` | `(row, col)` cells to exclude, 1-based indexing, bottom-left origin |
+
+**Returns:** Copy of input DataFrame with added columns: `row`, `col`, `grid_x`, `grid_y`
+
+### `compute_allocation_quality(result, n_row=None, n_col=None)`
+
+Compute quality metrics for a grid allocation.
+
+**Returns:** `dict` with keys: `mean_distance`, `total_distance`, `max_distance`, `rmse`
+
+### `visualize_allocation(result, n_row, n_col, ...)`
+
+Side-by-side visualization of geographic and grid layouts.
+
+### `compare_compactness(pts, n_row, n_col, compactness_values=None, ...)`
+
+Compare allocations across different compactness values.
+
+### `generate_sample_points(n_points=50, pattern='random', seed=None)`
+
+Generate test data. Patterns: `'random'`, `'cluster'`, `'ring'`, `'grid'`.
+
+## How It Works
+
+For each point *i* and grid cell *j*, the algorithm computes a cost matrix:
+
+```
+C[i,j] = (x_scaled[i] - x_grid[j])^2 + (y_scaled[i] - y_grid[j])^2
 ```
 
-This generates five professional visualizations that demonstrate different aspects of the algorithm:
+When `compactness != 0.5`, costs are adjusted by distance from grid center:
 
----
+```
+C[i,j] += -2(compactness - 0.5) * dist_from_center[j] * mean(C[i,:])
+```
 
-### **Demo 1: Basic Point Allocation**
-
-![Basic Allocation Example](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo1_basic.png)
-
-_Figure 1: Basic 2×2 grid allocation demonstrating optimal assignment of four corner points to grid cells while preserving geographic relationships. The algorithm minimizes total squared distance between original geographic positions and grid cell centers._
-
----
-
-### **Demo 2: Compactness Parameter Effect**
-
-![Compactness Parameter Effect](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo2_compactness.png)
-
-_Figure 2: Systematic comparison of compactness parameter effects (0.0, 0.5, 1.0). The compactness parameter controls the trade-off between geographic fidelity and grid clustering: lower values preserve spatial relationships while higher values create more compact, centralized clusters._
-
----
-
-### **Demo 3: Spacer Constraints**
-
-![Spacer Constraints](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo3_spacers.png)
-
-_Figure 3: Demonstration of spacer constraints for geographic separation. Left panel shows unconstrained allocation allowing mainland-island mixing; right panel shows allocation with spacer barriers creating forced separation, effectively mimicking the geographic isolation of Corsica from mainland France._
-
----
-
-### **Demo 4: Geographic Pattern Analysis**
-
-![Geographic Patterns](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo4_patterns.png)
-
-_Figure 4: Comparative analysis of different geographic input patterns (random, cluster, ring, grid) and their transformation into grid layouts. Each column shows the original geographic distribution (top row) and resulting grid allocation (bottom row) with quantitative RMSE quality metrics._
-
----
-
-### **Demo 5: Grid Size Optimization**
-
-![Grid Size Exploration](https://raw.githubusercontent.com/TMFNK/pygridmappr/main/examples/demo5_grid_sizes.png)
-
-_Figure 5: Systematic exploration of grid size effects on allocation quality. Analysis shows how different grid dimensions (8×8, 10×10, 12×12, 15×15) balance between available graphic space and geographic fidelity, with quantitative RMSE measurements for each configuration._
-
-## Design Philosophy
-
-This implementation prioritizes **accuracy over optimization**. The code structure and logic closely mirror the original R implementation to ensure:
-
-1. **Mathematical fidelity**: Exact replication of cost calculations and compactness effects
-2. **Reproducibility**: Deterministic results for research and documentation
-3. **Transparency**: Clear documentation of algorithm steps with references
+The optimal one-to-one assignment is solved with [`scipy.optimize.linear_sum_assignment`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.linear_sum_assignment.html) (Hungarian algorithm).
 
 ## Differences from R Implementation
 
-- **Language**: Python instead of R
-- **Solver**: `scipy.optimize.linear_sum_assignment` instead of R's linear programming solver
-- **Visualization**: matplotlib instead of ggplot2
-- **Data structures**: pandas DataFrame instead of tibble
+| Aspect | R (`gridmappr`) | Python (`pygridmappr`) |
+|--------|-----------------|----------------------|
+| Solver | R linear programming | `scipy.optimize.linear_sum_assignment` |
+| Visualization | ggplot2 | matplotlib |
+| Data structures | tibble | pandas DataFrame |
 
-**Core algorithm behavior is identical.**
+Core algorithm behavior is identical.
 
 ## References
 
-### Original R Package
-
-- Beecham, R. (2021). _gridmappr: Gridmap Allocations with Approximate Spatial Arrangements_. https://github.com/rogerbeecham/gridmappr
-
-### Publications
-
-- Beecham, R., Dykes, J., Hama, L. and Lomax, N. (2021). On the Use of 'Glyphmaps' for Analysing the Scale and Temporal Spread of COVID-19 Reported Cases. _ISPRS International Journal of Geo-Information_, 10(4), 213. https://doi.org/10.3390/ijgi10040213
-
-- Beecham, R. and Slingsby, A. (2019). Characterising labour market self-containment in London with geographically arranged small multiples. _Environment and Planning A: Economy and Space_, 51(6), 1217–1224. https://doi.org/10.1177/0308518X19850580
-
-### Inspiration
-
+- Beecham, R. (2021). *gridmappr: Gridmap Allocations with Approximate Spatial Arrangements*. [GitHub](https://github.com/rogerbeecham/gridmappr)
+- Beecham, R., Dykes, J., Hama, L. and Lomax, N. (2021). On the Use of 'Glyphmaps' for Analysing the Scale and Temporal Spread of COVID-19 Reported Cases. *ISPRS International Journal of Geo-Information*, 10(4), 213. [DOI](https://doi.org/10.3390/ijgi10040213)
 - Wood, J. Observable notebooks on [Linear Programming](https://observablehq.com/@jwolondon/hello-linear-programming) and [Gridmap Allocation](https://observablehq.com/@jwolondon/gridmap-allocation)
 
-## License
-
-AGPL-3.0 License (matching original R package)
-
 ## Citation
-
-If you use this package, please cite the original R package:
 
 ```bibtex
 @software{beecham2021gridmappr,
@@ -323,8 +204,14 @@ If you use this package, please cite the original R package:
 
 ## Contributing
 
-Contributions are welcome! Please ensure any changes maintain mathematical fidelity with the original R implementation.
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) before getting started.
+
+Whether you're fixing a bug, adding a feature, or improving documentation, we appreciate your help.
+
+## License
+
+[AGPL-3.0](LICENSE) (matching original R package)
 
 ## Acknowledgments
 
-This Python implementation is based on Roger Beecham's excellent R package `gridmappr`. All credit for the algorithm design and innovation goes to Roger Beecham and Jo Wood.
+All credit for the algorithm design goes to [Roger Beecham](https://github.com/rogerbeecham) and [Jo Wood](https://github.com/jwoLondon). This package is a Python port of their work.
